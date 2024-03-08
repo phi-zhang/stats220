@@ -1,6 +1,8 @@
 # stats220
 
-This is a repository for projects made for a class called **STATS 220: Data Technologies**. <!--- italics --->
+This is a repository containing projects made for a class called **STATS 220: Data Technologies** at the University of Auckland.
+
+*(I might add a license later, but in the meantime, feel free to use this code for anything non-commercial. Maybe don't copy-paste it for your own STATS 220 project, though.)*
 
 # Projects in this repo
 
@@ -9,8 +11,7 @@ This is a repository for projects made for a class called **STATS 220: Data Tech
 
 ## Meme Creation
 
-Coming soon...
+This code recreates ![the "galaxy brain" meme](https://knowyourmeme.com/memes/galaxy-brain), with inspiration from the general pattern of memes which show a progressively "better" image next to things which the meme creator likes better.
 
-<!--- unordered bullet points for features --->
-
-<!--- link to other websites --->
+- What if, instead of your brain expanding, your cat got cooler?
+- Should be able to make this into an interactive meme creation tool at some point, as long as the meme follows the "image panel - text panel" format. 
