@@ -11,7 +11,7 @@ This is a repository containing projects made for a class called **STATS 220: Da
 
 ## Meme Creation
 
-This code recreates [the "galaxy brain" meme](https://knowyourmeme.com/memes/galaxy-brain), with inspiration from the general pattern of memes which show a progressively "better" image next to things which the meme creator likes better.
+The code recreates [the "galaxy brain" meme](https://knowyourmeme.com/memes/galaxy-brain), with inspiration from the general pattern of memes which show a progressively "better" image next to things which the meme creator likes better. Included is my report on its creation.
 
 - What if, instead of your brain expanding, your cat woke up and got swag?
 - This should be able to be made into an interactive meme creation tool at some point, for memes following the "image panel - text panel" format.
