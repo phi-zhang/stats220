@@ -1,0 +1,237 @@
+---
+title: "Project 2"
+author: "Phi Zhang"
+subtitle: "STATS 220 Semester One"
+output:
+  html_document:
+    code_folding: hide
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(patchwork)
+library(ggthemes)
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE, error = FALSE)
+```
+
+```{css, echo = FALSE}
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Mono:wght@100..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400..700;1,400..700&family=Noto+Sans+Mono:wght@100..900&display=swap');
+
+body {
+  background-color: #FFE9CC;
+  padding-left: 25%;
+  padding-right: 25%;
+  padding-top: 10%;
+  padding-bottom: 10%;
+  text-align: center;
+}
+
+h1, h2, h3, h4 {
+  font-family: "Lora", serif;
+  font-weight: 600;
+  color: #996633;
+}
+
+p {
+  font-family: "Noto Sans Mono", monospace;
+  text-align: center;
+  color: #442200;
+}
+
+img {
+  border: inset;
+  border-color: #BB9966;
+  display: block;
+  margin: auto;
+}
+
+.code {
+  text-align: left;
+  background-color: #F4F1E9;
+}
+```
+## Introduction
+
+For my report, I've decided to focus on the snacking behaviour of people in my general social circle.
+
+A guideline for designing forms covered by this class is to communicate the data collection's purpose. This ensures that form respondents are aware of what will happen to their data, so that they can consent to its use.
+
+To follow this guideline, I thought about what research questions I would want to answer while designing the form. I ended up with "what factors influence people's snacking behaviours?". (Though if the respondents had actually filled the form out over several weeks, it would be "how do people's snacking behaviour change over time?".) I clarified this in the introduction of my form, since I thought it would be good for respondents to know how their data would be analysed. I also clarified that the only personal information which would be collected is the participant's gender (though there was a "prefer not to say" option). I am making the data publicly available on GitHub for reproducibility and portfolio purposes, and specified so on the form. This also meant it was extra important that my participants were comfortable with sharing their information. 
+
+If my participants had filled out my form over more weeks, I could have analysed changes in snacks per day, days which snacks were eaten on, and types of snacks eaten over the weeks (see questions 2, 3, and 5). I would expect gender and full meals eaten per day to be more consistent (and even if they weren't, there aren't enough options on the form for me to expect an interesting amount of variation). I could perhaps have done time series analysis with that type of data, especially if I collected it for long enough to see any seasonal patterns: maybe people eat more snacks in the summer, due to ice cream and other cold snacks. 
+
+Here is the link to my Google form: [https://forms.gle/5grtFS6T3HoHzxku6](https://forms.gle/5grtFS6T3HoHzxku6).
+
+## Analytics
+
+Again, I was interested in the factors influencing people's snacking behaviours, focusing on gender and meals per day.
+
+```{r import_data, class.source = "code"}
+learning_data <- read_csv("https://docs.google.com/spreadsheets/d/e/2PACX-1vTUYXrWpNfyheP7lJBuhxufXLqbY9GIwkiBvNINx9uAsGYK_CKtbK_5NCQWYFByRLhVu-EEoLIMg5X9/pub?gid=744125984&single=true&output=csv")
+
+# Rename variables
+learning_data <- learning_data %>%
+  rename(timestamp = "Timestamp",
+         gender = "What is your gender?",
+         snack_days = "How many days did you eat snacks over the past week, by your estimate?",
+         snacks_per_day = "How many snacks did you eat per day, on average?",
+         full_meals = "How many full meals did you eat per day, on average?",
+         snack_types = "What types of snack did you eat?")
+
+# Remove invalid observation
+learning_data <- subset(learning_data, snack_days <= 7)
+```
+
+Most of my respondents tended to eat one or two meals per day, rather than three or more. About half of my respondents who disclosed their gender were female, with the rest being similarly split between male and some gender other than male and female. No respondents who disclosed a gender other than male and female ate 3 meals a day.
+
+```{r meals_and_gender, class.source = "code"}
+# Bar graphs for meal and gender
+
+bar_graph_base <- learning_data %>% ggplot() +
+  scale_y_continuous(name = "Count") +
+  theme_solarized()
+
+meals_bar_graph <- bar_graph_base +
+  geom_bar(aes(x = full_meals), fill = "#BB9966") +
+  scale_x_discrete(name = "Full meals")
+
+gender_bar_graph <- bar_graph_base +
+  geom_bar(aes(x = gender), fill = "#BB9966") +
+  scale_x_discrete(name = "Gender", labels = c("Male", "Female", "Other", "Undisclosed"))
+
+meals_by_gender <- bar_graph_base +
+  geom_bar(aes(x = gender, fill = full_meals)) +
+  scale_fill_discrete(name = "Full meals") +
+  scale_x_discrete(name = "Gender", labels = c("Male", "Female", "Other", "Undisclosed"))
+
+(meals_bar_graph + gender_bar_graph) / meals_by_gender
+```
+
+At first I forgot to include response validation for a maximum of 7 days in the week, so I ended up with one respondent claiming to have eaten snacks on 10 days over the past week. I couldn't tell whether this respondent had meant the maximum amount of days, had made a typing mistake on either 1 or 0, or had simply misinterpreted the question. Since I have more than the required twenty observations, I felt the best course of action was to remove the observation.
+
+With that observation removed, it seemed that most of my respondents (75% of them) ate snacks on at least three days a week. At least a quarter of them ate a snack every day.
+
+The "other" gender has a higher looking median amount of snack-eating days, but it may not be notable due to there being very few observations.
+
+People who ate less than three full meals a day had a wider spread of number of snack-eating days, especially on the lower end of number of days. This may represent people who don't eat a lot in general. People who ate three full meals or more had a notably higher median amount of days on which snacks were eaten.
+
+```{r snack_days, class.source = "code"}
+# Boxplots for days when snacks were eaten
+
+snack_days_gender <- learning_data %>%
+  ggplot(aes(x = gender, y = snack_days, color = gender)) +
+  geom_boxplot(alpha = 0, color = "#BB9966") +
+  geom_jitter(height = 0, width = 0.2, alpha = 0.4, show_guide = FALSE) +
+  theme_solarized() +
+  ggtitle("Snacks days by gender") +
+  scale_x_discrete(name = "Gender", labels = c("Male", "Female", "Other", "Undisclosed")) +
+  scale_y_continuous(name = "Days snacks were eaten")
+
+snack_days_meals <- learning_data %>%
+  ggplot(aes(x = full_meals, y = snack_days, color = full_meals)) +
+  geom_boxplot(alpha = 0, color = "#BB9966") +
+  geom_jitter(height = 0, width = 0.2, alpha = 0.4, show_guide = FALSE) +
+  theme_solarized() +
+  ggtitle("Snacks days by full meals") +
+  scale_x_discrete(name = "Full meals") +
+  scale_y_continuous(name = "Days snacks were eaten")
+
+snack_days_gender + snack_days_meals
+
+# Summary values
+paste("These respondents ate snacks on an average of", median(learning_data$snack_days), "days a week.")
+"Overall summary:"
+summary(learning_data$snack_days)
+```
+
+Meanwhile, the average snacks eaten per day which respondents reported seemed to be decently low, with medians of around 2 for each gender, 2 for people who eat less than 3 full meals, and 3 for people who eat 3 or more full meals. Three quarters of respondents ate three or less snacks a day, but some ate up to seven. People who ate 1-2 full meals a day had more variation in the number of snacks they reported eating per day.
+
+```{r snacks_per_day, class.source = "code"}
+# Boxplots for snacks eaten per day
+
+snacks_per_day_gender <- learning_data %>%
+  ggplot(aes(x = gender, y = snacks_per_day, color = gender)) +
+  geom_boxplot(alpha = 0, color = "#BB9966") +
+  geom_jitter(height = 0, width = 0.2, alpha = 0.4, show_guide = FALSE) +
+  theme_solarized() +
+  ggtitle("Snacks per day by gender") +
+  scale_x_discrete(name = "Gender", labels = c("Male", "Female", "Other", "Undisclosed")) +
+  scale_y_continuous(name = "Snacks per day")
+
+snacks_per_day_meals <- learning_data %>%
+  ggplot(aes(x = full_meals, y = snacks_per_day, color = full_meals)) +
+  geom_boxplot(alpha = 0, color = "#BB9966") +
+  geom_jitter(height = 0, width = 0.2, alpha = 0.4, show_guide = FALSE) +
+  theme_solarized() +
+  ggtitle("Snacks per day by full meals") +
+  scale_x_discrete(name = "Full meals") +
+  scale_y_continuous(name = "Snacks per day")
+
+snacks_per_day_gender + snacks_per_day_meals
+
+# Summary values
+paste("These respondents ate an average of", median(learning_data$snacks_per_day), "snacks a day.")
+"Overall summary:"
+summary(learning_data$snacks_per_day)
+```
+
+Finally, it seems that most types of snacks were equally popular, with fried snacks and preserved natural snacks being less so. I would guess this is because fried snacks are harder to access and preserved natural snacks, with the examples being "pickles, prunes, and canned fruit", don't taste as good to most people as alternatives.
+
+```{r types_of_snacks, class.source = "code"}
+# Plot the snack type counts as a bar graph
+snack_types_plottable <- learning_data %>%
+  separate_rows(snack_types, sep = ", ") %>%
+  select(gender, full_meals, snack_types) %>%
+  filter(grepl("F|S|P|D", snack_types)) %>%
+  mutate(snack_types = case_match(snack_types,
+                                  "Fried snacks such as chips (hot chips/french fries)" ~ "fried",
+                                  "Sweet snacks such as cookies" ~ "sweet",
+                                  "Preserved savoury snacks such as chips (packaged chips/crisps)" ~ "preserved_savoury",
+                                  "Fresh natural snacks such as salad" ~ "fresh_natural",
+                                  "Preserved natural snacks such as pickles" ~ "preserved_natural",
+                                  "Drinks such as bubble tea" ~ "drinks"))
+
+snack_types_plot_base <- snack_types_plottable %>% ggplot() +
+  scale_y_continuous(name = "Count") +
+  theme_solarized()
+
+snack_types_plot <- snack_types_plot_base +
+  geom_bar(aes(x = snack_types), fill = "#BB9966") +
+  scale_x_discrete(name = "Snack type", labels = c('Drinks (1)', 'Fresh (2)', 'Fried (3)', 'Preserved \n natural (4)', 'Savoury (5)', 'Sweet (6)')) +
+  ggtitle("Snack types eaten by gender and full meals per day")
+
+snack_types_gender <- snack_types_plot_base +
+  geom_bar(aes(x = snack_types, fill = gender)) +
+  scale_fill_discrete(name = "Gender") +
+  scale_x_discrete(name = "Snack type", labels = c('1', '2', '3', '4', '5', '6'))
+
+snack_types_meals <- snack_types_plot_base +
+  geom_bar(aes(x = snack_types, fill = full_meals)) +
+  scale_fill_discrete(name = "Full meals") +
+  scale_x_discrete(name = "Snack type", labels = c('1', '2', '3', '4', '5', '6'))
+
+snack_types_plot / (snack_types_gender + snack_types_meals)
+```
+
+### General comments
+
+There isn't much notable difference between genders for snacking frequencies, though it may be possible that nonbinary people eat snacks on more days than others. Meanwhile, people who eat 3 or more full meals seem to eat snacks on more days and have a smaller range of average amount of snacks eaten per day (though the amount is not notably different).
+
+For types of snacks eaten, there seems to be a balanced amount of people who eat 3 and people who eat less than 3 full meals eating natural snacks, compared to other types of snacks. Also, fried snacks are eaten only by respondents who eat less than 3 full meals a day. This could potentially be indicative of people who eat 3 full meals a day being more conscious of their eating habits. 
+
+It's important to note that due to my small sample size and various biases in the data collection process (self-selection, inefficient stratification of my social circle, etc.), these observations are merely that - observations. This data wouldn't make a good starting point for inferences about my general social circle. However, it is probably fine for time series analysis for these particular people.
+
+In the future, it could be interesting to see how the types of snacks which these people eat change over time. Perhaps they drink more drinks in the summer, or eat more fried food (hot food) in the winter. There may also be some sort of trend in how many days they eat snacks on, or how many snacks they eat per day - perhaps people tend to eat snacks such as ice cream in the summer. Also, if I redid this survey with the intention to do inference of some kind, I would remove the focus on gender, and instead think about full meals and other factors which may affect snacking behaviour. 
+
+## Creativity
+
+For this project's creativity requirements, I tried to write a statistically insightful analytics section. I can't go very far with a small sample size like this, especially when dealing with proportions and sparse count data. However, I tried to comment meaningfully on the plots, bring up further venues of investigation, and think about how the data might be used in the context of informal longitudinal research. I also had a research question which I was keeping in mind. 
+
+Other than the statistics, I also tried to make my data visualisation look somewhat nice. I used quite a few `ggplot2` options which I believe haven't been covered in this class, but I had learned in another class or by searching up how to do what I wanted.
+
+## Learning reflection
+
+One important idea I've learned from this module is data management. I've learned about how data is collected, how it's stored, and how it needs to be cleaned for analysis. Although I've encountered some of the topics such as ethics and the importance of data cleaning before, this is the first time I have had to anything practical myself. Trying to figure out how to wrangle the commas in the level names of my snack types variable very quickly taught me I should have been considering my data analysis process while data collecting.
+
+I'd be keen to learn more about databases. It's my understanding that they are very important for the running of most modern technology involving information, as well as most probably my future job. I'll be taking a COMPSCI class on this next year, but in the meantime, I'm looking forwards to anything else in STATS 220 we might be learning about them as well.
