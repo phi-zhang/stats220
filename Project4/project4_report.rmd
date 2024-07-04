@@ -1,0 +1,86 @@
+---
+title: "Project 4"
+author: "Phi Zhang"
+subtitle: "Visualising data about videos from the YouTube channels Kanae and Kuzuha"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo=TRUE, message=FALSE, warning=FALSE, error=FALSE)
+```
+
+```{css echo=FALSE}
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Mono:wght@100..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400..700;1,400..700&family=Noto+Sans+Mono:wght@100..900&display=swap');
+
+body {
+  background-color: #BADAEE;
+  padding-left: 25%;
+  padding-right: 25%;
+  padding-top: 10%;
+  padding-bottom: 10%;
+  text-align: center;
+}
+
+h1, h2, h3, h4 {
+  font-family: "Lora", serif;
+  font-weight: 600;
+  color: #1167ad;
+}
+
+p {
+  font-family: "Noto Sans Mono", monospace;
+  text-align: center;
+  color: #31476d;
+}
+
+img {
+  border: inset;
+  border-color: #1167ad;
+  display: block;
+  margin: auto;
+}
+
+.code {
+  text-align: left;
+  background-color: #EDF6F8;
+}
+```
+
+## Introduction
+
+Note: I have 197 instead of 200 rows in my data due to encountering an error in the data collection script.
+
+I chose the channels Kanae and Kuzuha, who are both Virtual YouTubers under the talent agency Nijisanji. Kanae and Kuzuha make up a popular unit called ChroNoiR, along with individually being a couple of the most popular male Virtual YouTubers, so I thought it would interesting to see how their video metrics compare to each other. 
+
+Before I accessed the data for visualisations, I considered comparing their views per video or likes per video over time, and their most commonly used tags. This would have let us see how their videos' popularity has changed over their careers, and what their videos are most often about. I thought there might be higher growth in views or likes for Kuzuha, and that they probably most often make videos about similar games.
+
+In the end, since Kanae has like counts disabled, I ended up looking at comparing comment counts or view counts over time for my first plot. I went with view counts. View counts are a better measure of engagement, in my opinion - comment counts can be unreliable, since sometimes comments are turned off, or the videos are archives of livestreams where most of the comments were in the live chat.
+
+The trickier aspect ended up being time: it felt extremely uninformative to simply plot view count over time, because it was all a mass of small blobs at the bottom of the y-axis with a few more popular videos sticking out. After some experimenting, I decided to group time by months and plot the mean view count for each month, in hopes that looking at those would make any patterns more obvious than the somewhat indistinguishable individual view counts. 
+
+Then, I looked for something I could do with a categorical variable. Tags were not a variable which was collected, and I noticed when I opened some videos that the games weren't usually tagged anyways. So, looking for inspiration from the lab tasks and lecture slides, I thought it could be interesting to see which of their videos got the most popular. It would flow well in the data story, too - from showing the views of all their videos, to showing what the most viewed videos are. I used `geom_col` to make a bar graph, and ran into the problem of the titles being extremely long. My solution was to use images as the labels with the `ggtext` package and to put the titles on the bars instead with `geom_text`, both to solve the problem and for extra visual interest.
+
+Finally, I felt like a fitting final plot could be a summary of Kanae's and Kuzuha's overall video metrics compared to each other. The ones I had available were duration, views, and comment count. I thought to compare means at first, but I couldn't figure out how to make a meaningful and suitably detailed visualisation (for example, bar charts didn't feel fitting because I wasn't counting anything, I was just trying to display a point average; and simply displaying two points on a plot felt very awkward). So I figured a `geom_jitter` and `geom_boxplot` could work instead, as a more informative way to compare metrics between the channels. The boxplots aren't very visible for views or comments, being squished at the left side of the graph, but I suppose that's informative in its own way.
+
+## Dynamic data story
+
+![Data story](data_story.gif)
+
+For creativity, I've used the extra packages `patchwork` and `ggtext` to build on the code examples from this class. `patchwork` let me combine related graphs for easier comparisons in a single larger graph, while `ggtext` let me use images as my axis labels. I've also used the `image_blur` function from the `magick` package and another slide for each plot to make brief comments on the plots, to add some context and thoughts. I've tried to adjust the frame counts for a more pleasant viewing/reading experience as well. Overall, I've tried to tell a cohesive story about Kanae's and Kuzuha's career successes over the years.
+
+## Learning reflection
+
+I learned a lot about the important idea of using `ggplot2` and the grammar of graphics to make more complex plots, with multiple `geom`s and custom themes. I also learned more about how to manipulate data to make the plots we want to see, such as making a top n ranking by some variable. It was interesting to see how different data frames could then be used for different layers in the same plot.
+
+I still feel like I could and want to learn a lot more about `ggplot2`. I'd like to make my plots look more pleasant, to choose better color palettes, and to have better control over the elements of my plot. It would also be great to keep seeing different plots, so that I can build up a mental library of what kind of data visualisations are possible.
+
+## Appendix
+
+```{r file='visualisations.R', eval=FALSE, echo=TRUE, class.source = "code"}
+
+```
+
+```{r file='data_story.R', eval=FALSE, echo=TRUE, class.source = "code"}
+
+```
