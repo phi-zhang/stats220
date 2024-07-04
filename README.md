@@ -4,11 +4,14 @@ This is a repository containing projects made for a class called **STATS 220: Da
 
 *(I might add a more formal license later, but in the meantime, feel free to use this code for anything non-commercial. Maybe don't copy-paste it for your own STATS 220 project, though.)*
 
+Check out the project reports in a nice web format [here](https://phi-zhang.github.io/stats220/).
+
 # Projects in this repo
 
 1. Meme Creation
 2. Snacking Survey
-3. Others coming soon!
+3. Pixabay photo exploration
+4. Data story
 
 ## Meme Creation
 
@@ -22,3 +25,9 @@ The code recreates [the "galaxy brain" meme](https://knowyourmeme.com/memes/gala
 ## Snacking Survey
 - I surveyed some of my friends and family, and made a report on the survey results
 - The survey is designed so that it could be taken over multiple weeks, but the participants just filled it once for this project.
+
+## Pixabay photo exploration
+- This was a test run to see what it's like to analyse social media data.
+
+## Data story
+- I made a nice little visualisation GIF about my favourite Virtual YouTubers' careers.
