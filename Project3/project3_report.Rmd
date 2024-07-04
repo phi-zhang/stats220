@@ -1,0 +1,178 @@
+---
+title: "Project 3"
+subtitle: "STATS 220 Semester One 2024"
+author: "Phi Zhang"
+date: "2024-04-10"
+output:
+  html_document:
+    code_folding: hide
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo=TRUE, message=FALSE, warning=FALSE, error=FALSE)
+library(tidyverse)
+library(patchwork)
+library(ggthemes)
+photo_data <- read_csv("selected_photos.csv")
+```
+```{css, echo = FALSE}
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Mono:wght@100..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400..700;1,400..700&family=Noto+Sans+Mono:wght@100..900&display=swap');
+
+body {
+  background-color: #CCEEAA;
+  padding-left: 25%;
+  padding-right: 25%;
+  padding-top: 10%;
+  padding-bottom: 10%;
+  text-align: center;
+}
+
+h1, h2, h3, h4 {
+  font-family: "Lora", serif;
+  font-weight: 600;
+  color: #669955;
+}
+
+p {
+  font-family: "Noto Sans Mono", monospace;
+  text-align: center;
+  color: #224400;
+}
+
+img {
+  border: inset;
+  border-color: #99BB66;
+  display: block;
+  margin: auto;
+}
+
+.code {
+  text-align: left;
+  background-color: #E9F4F1;
+}
+```
+## Introduction
+
+I used the words "blue butterfly" to search for photos on pixabay.com, because I like the look of blue butterflies.
+
+![Screenshot of the first few rows of royalty-free photos](top_photos.png)
+
+Before I started exploring the photo data, I noticed that most of the photos showed the butterfly having landed on some plant; probably because it's difficult to take a picture of a moving butterfly. When I clicked some photos, they tended to have around 100-300 likes, apart from a popular photo with over 1000 likes. I also noticed that some common tags included butterfly, nature, insect, and blue. The "butterfly" and "blue" tags were likely how those images appeared in the search results, but "nature" and "insect" were more interesting to see.
+
+Here are the URLs of my selected photos:
+
+```{r}
+photo_data %>%
+  select(pageURL) %>%
+  knitr::kable()
+```
+And here is a GIF of my selected photos:
+
+![GIF of the preview thumbnails](my_photos.gif)
+
+## Key features of selected photos
+
+```{r}
+# Summary values
+median_collections <- median(photo_data$collections, na.rm = TRUE)
+mean_collections <- mean(photo_data$collections, na.rm = TRUE)
+
+median_comments <- median(photo_data$comments, na.rm = TRUE)
+mean_comments <- mean(photo_data$comments, na.rm = TRUE)
+
+tagged_flower_count <- sum(photo_data$tagged_flower == "Yes", na.rm = TRUE)
+
+# Grouped data and summary values
+selected_photos_grouped <- photo_data %>%
+  select(tagged_flower,
+         likes_per_thousand_views,
+         downloads_per_thousand_views) %>%
+  group_by(tagged_flower) %>%
+  summarise(median_likes = median(likes_per_thousand_views),
+            median_downloads = median(downloads_per_thousand_views))
+```
+
+I selected photos based on having more than 15000 views, so that we could look at the features of some more popular photos.
+
+The median number of collections which my selected photos were in was `r median_collections`, while the mean number of collections was `r mean_collections`. The median number of comments which my selected photos had was `r median_comments`, while the mean number of comments was `r mean_comments`. 
+
+There were `tagged_flower_count` photos in my selection of photos with the tag "flower" or "flowers".
+
+## Creativity
+
+```{r}
+# Yay, plots
+
+## Likes plots
+likes_by_tag_comments <- photo_data %>%
+  ggplot(aes(x = comments,
+             y = likes_per_thousand_views,
+             color = tagged_flower)) +
+  geom_point() +
+  theme_solarized_2() +
+  labs(title = "Likes per thousand views by comments and collections",
+       x = "Number of comments",
+       y = "Likes/1000 views",
+       color = "'Flower'/'flowers' tag")
+
+likes_by_tag_collections <- photo_data %>%
+  ggplot(aes(x = comments,
+             y = likes_per_thousand_views,
+             color = tagged_flower)) +
+  geom_point() +
+  theme_solarized_2() +
+  labs(x = "Number of collections",
+       y = "Likes/1000 views",
+       color = "'Flower'/'flowers' tag",
+       caption = "Source: Pixabay")
+
+likes_plot <- likes_by_tag_comments / likes_by_tag_collections
+likes_plot
+
+## Downloads plots
+downloads_by_tag_comments <- photo_data %>%
+  ggplot(aes(x = comments,
+             y = downloads_per_thousand_views,
+             color = tagged_flower)) +
+  geom_point() +
+  theme_solarized_2() +
+  labs(title = "Downloads per thousand views by comments and collections",
+       x = "Number of comments",
+       y = "Downloads/1000 views",
+       color = "'Flower'/'flowers' tag")
+
+downloads_by_tag_collections <- photo_data %>%
+  ggplot(aes(x = collections,
+             y = downloads_per_thousand_views,
+             color = tagged_flower)) +
+  geom_point() +
+  theme_solarized_2() +
+  labs(x = "Number of collections",
+       y = "Downloads/1000 views",
+       color = "'Flower'/'flowers' tag",
+       caption = "Source: Pixabay")
+
+downloads_plot <- downloads_by_tag_comments / downloads_by_tag_collections
+downloads_plot
+```
+
+To demonstrate creativity, I've tried to create some informative plots about how a few selected factors are related to a photo's quality metrics. I've also tried to keep in mind the context of a statistical investigation.
+
+I decided that "quality metrics" here are the likes and downloads per 1000 views. The likes means that the photos succeeded in being admirable art to people, and the downloads means that the photos succeeded in being useful to people. I used rates instead of the raw likes and downloads to account for how photos which have more views most likely have more likes and downloads (though I could have quickly plotted that out to find out earlier as well).
+
+The factors I chose which I thought might affect the metrics are comments, collections, and whether or not the photo has the word "flower" (or "flowers" in some cases) in its tags. Comments and collections are obvious signs of user engagement. Meanwhile, I wondered if photos tagged with another popular-seeming tag which people might search up by itself might have a difference in popularity from photos without that tag. 
+
+The plots are made to answer a question something like "how do we get a higher ratio of likes and downloads on our Pixabay photos?" (with methods such as getting people to comment, getting people to save to collections, and tagging the photo with another popular tag in consideration). What I mostly notice is that there doesn't seem to be much difference between photos with "flower" in their tags and photos without, and that scatter increases greatly as the number of comments or collections increases. There's plenty of room for further investigation, though.
+
+## Learning reflection
+
+An important idea I've learned from this module is what JSON is and how it's used. Most of the statistics I've done so far has involved data given in CSV format, but I've learned that JSON is a more commonly used way to store data on the web (I assume because Javascript is so popular for building websites.) It was interesting to see how the format and syntax differed from the literally rectangular data I'm used to seeing, and how the data could be requested from APIs. It's stuff I've vaguely heard about but never properly learned before.
+
+I would be curious to further explore how to manipulate data, like we've done with filter() and group_by() in this module. I've heard that cleaning and preparing data is a big part of statistics, while most data I've worked with for school is already prepared for me. I've experienced a bit of data manipulation already in this course especially in this project and the last, but I still want to learn more skills.
+
+## Appendix
+
+```{r file='exploration.R', eval=FALSE, echo=TRUE}
+
+```
