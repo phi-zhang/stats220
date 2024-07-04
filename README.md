@@ -1,6 +1,6 @@
 # stats220
 
-This is a repository containing projects made for a class called **STATS 220: Data Technologies** at the University of Auckland.
+This is a repository containing projects made for a class called **STATS 220: Data Technologies** at the University of Auckland. I've uploaded the .Rmd files as-is for now, but hopefully I'll have the chance to optimise things and write nicer project reports in the future. I actually did 5 projects for this class, but I felt the first 4 made for nicer finished products.
 
 *(I might add a more formal license later, but in the meantime, feel free to use this code for anything non-commercial. Maybe don't copy-paste it for your own STATS 220 project, though.)*
 
